@@ -1,37 +1,28 @@
 import express from 'express';
 import { prisma } from '../utiles/prisma/index.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
 
-// 아이템 생성
-router.post(
-    '/posts/:itemid/create',
-    authMiddleware,
-    async (req, res, next) => {
-      const { itemid } = req.params;
-      const { userId } = req.user;
-      const { itemname } = req.body;
+// 아이템 생성 api
+router.post('/posts', authMiddleware, async (req, res, next) => {
+    const { userId } = req.user;
+    const { title, content } = req.body;
   
-      const post = await prisma.posts.findFirst({
-        where: {
-            itemid: +itemid,
-        },
-      });
-      if (!post)
-        return res.status(404).json({ message: '게시글이 존재하지 않습니다.' });
+    const post = await prisma.posts.create({
+      data: {
+        userId: +userId,
+        title,
+        content,
+      },
+    });
   
-      const comment = await prisma.comments.create({
-        data: {
-          userId: +userId, //  ID
-          postId: +postId, // 댓글 작성 게시글 ID
-          content: content,
-        },
-      });
-  
-      return res.status(201).json({ data: comment });
-    },
-  );
+    return res.status(201).json({ data: post });
+  });
 
 
 /** 아이템 수정 API **/
@@ -44,7 +35,7 @@ router.put('/posts/:itemid/refresh', async (req, res, next) => {
     });
   
     if (!post)
-      return res.status(404).json({ message: '게시글이 존재하지 않습니다.' });
+      return res.status(404).json({ message: '아이템이 존재하지 않습니다.' });
     else if (post.password !== password)
       return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
   
@@ -59,31 +50,25 @@ router.put('/posts/:itemid/refresh', async (req, res, next) => {
       },
     });
   
-    return res.status(200).json({ data: '게시글이 수정되었습니다.' });
+    return res.status(200).json({ data: '아이템이 수정되었습니다.' });
   });
 
 // 아이템 목록 조회
-router.get('/posts/:itemId/create', async (req, res, next) => {
-    const { postId } = req.params;
-  
-    const post = await prisma.posts.findFirst({
-      where: {
-        postId: +postId,
-      },
-    });
-    if (!post)
-      return res.status(404).json({ message: '게시글이 존재하지 않습니다.' });
-  
-    const comments = await prisma.comments.findMany({
-      where: {
-        postId: +postId,
+router.get('/posts', async (req, res, next) => {
+    const posts = await prisma.posts.findMany({
+      select: {
+        postId: true,
+        userId: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: 'desc', // 아이템 목록을 최신순으로 정렬합니다.
       },
     });
   
-    return res.status(200).json({ data: comments });
+    return res.status(200).json({ data: posts });
   });
 
 

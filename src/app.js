@@ -15,7 +15,7 @@ app.use(express.json());
 
 // 라우터 연결 (JWT 인증 필요)
 app.use('/api/users', UsersRouter); // Users 관련 API
-app.use('/api/characters', authMiddleware, Charouter); // Characters 관련 API (JWT 인증 필수)
+app.use('/api/cha', authMiddleware, Charouter); // Characters 관련 API (JWT 인증 필수)
 
 // 서버 시작
 app.listen(PORT, () => {
