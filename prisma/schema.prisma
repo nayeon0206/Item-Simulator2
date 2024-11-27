@@ -27,20 +27,20 @@ model Users {
 
 model Charcter {
   charcterid Int    @id @default(autoincrement()) @map("charcterid")
-  name       String
-  health     Int    @default(500)
-  power      Int    @default(100)
-  money      Int    @default(10000)
-  userId     Int
-  User       Users  @relation(fields: [userId], references: [userid]) // Users 모델의 'userid'를 참조
+  charctername       String @map("charctername")
+  health     Int    @default(500) @map("health") // 캐릭터 스텟: 체력
+  power      Int    @default(100) @map("power") // 캐릭터 스텟: 힘
+  money      Int    @default(10000) @map("money") // 기본 지급 머니
+  userid     Int    @map("userid")
+  User       Users  @relation(fields: [userid], references: [userid]) // Users 모델의 'userid'를 참조
 }
 
 model Item {
   itemid       Int      @id @default(autoincrement())@map("itemid")
-  code     String   @unique // 아이템 코드 (고유값)
-  name     String   // 아이템 이름
-  ability  Json     // JSON 포맷의 아이템 능력
-  price    Int      // 아이템 가격
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  code     String   @unique @map("code") // 아이템 코드 (고유값)
+  itemname     String  @map("itemname") // 아이템 이름
+  ability  Json   @map("ability")  // JSON 포맷의 아이템 능력
+  price    Int    @map("price")  // 아이템 가격
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
 }
