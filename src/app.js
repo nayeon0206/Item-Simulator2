@@ -1,18 +1,23 @@
 import express from 'express';
-import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import UsersRouter from './routes/user.router.js';
+import Charouter from './routes/cha.router.js'
+import authMiddleware from './middlewares/auth.middlewares.js'; // JWT 인증 미들웨어
 
-// .env 파일을 읽어서 process.env에 추가합니다.
+// .env 파일을 읽어서 환경 변수로 추가
 dotenv.config();
 
 const app = express();
-const PORT = 3018;
+const PORT = process.env.PORT || 3018;
 
+// 전역 미들웨어 설정
 app.use(express.json());
-app.use(cookieParser());
-app.use('/api', [UsersRouter]);
 
+// 라우터 연결 (JWT 인증 필요)
+app.use('/api/users', UsersRouter); // Users 관련 API
+app.use('/api/characters', authMiddleware, Charouter); // Characters 관련 API (JWT 인증 필수)
+
+// 서버 시작
 app.listen(PORT, () => {
   console.log(PORT, '포트로 서버가 열렸어요!');
 });
