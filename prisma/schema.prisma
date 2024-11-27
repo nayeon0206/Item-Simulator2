@@ -17,10 +17,10 @@ model Users {
   userid    Int      @id @default(autoincrement()) @map("userid")
   email     String   @unique @map("email")
   password  String   @map("password")
-  createdAt DateTime @default(now()) @map("createdAt")
-  updatedAt DateTime @updatedAt @map("updatedAt")
+  createdAt DateTime @default(now()) @map("createdAt") // 생성 시간
+  updatedAt DateTime @updatedAt @map("updatedAt") // 수정 시간
 
-  characters Charcter[] // Users와 Character의 1:N 관계
+  characters Charcter[] // Users와 Character의 1:N 관계 한 사용자가 여러 캐릭터를 가질 수 있음
 
    @@map("Users")
 }
@@ -31,8 +31,8 @@ model Charcter {
   health     Int    @default(500) @map("health") // 캐릭터 스텟: 체력
   power      Int    @default(100) @map("power") // 캐릭터 스텟: 힘
   money      Int    @default(10000) @map("money") // 기본 지급 머니
-  userid     Int    @map("userid")
-  User       Users  @relation(fields: [userid], references: [userid]) // Users 모델의 'userid'를 참조
+  userid     Int    @map("userid") //Users 모델의 외래 키
+  User       Users  @relation(fields: [userid], references: [userid]) //Users 모델과의 관계
 }
 
 model Item {
@@ -41,6 +41,6 @@ model Item {
   itemname     String  @map("itemname") // 아이템 이름
   ability  Json   @map("ability")  // JSON 포맷의 아이템 능력
   price    Int    @map("price")  // 아이템 가격
-  createdAt DateTime @default(now()) @map("createdAt")
-  updatedAt DateTime @updatedAt @map("updatedAt")
+  createdAt DateTime @default(now()) @map("createdAt") //생성 시간
+  updatedAt DateTime @updatedAt @map("updatedAt") // 수정 시간
 }
