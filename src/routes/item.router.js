@@ -52,81 +52,139 @@ router.post('/items', authMiddleware, async (req, res, next) => {
     // 생성된 아이템 데이터를 상태 코드 201과 함께 클라이언트에 반환합니다.
     return res.status(201).json({ data: item });
   } catch (error) {
-    console.error('Error creating item:', error); // 디버깅용 로그
-    // 에러 발생 시 next()를 호출하여 에러 처리 미들웨어로 전달합니다.
+    // Prisma 에러 처리
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: '중복된 아이템 코드입니다.' });
+    }
+
+    // 기타 에러 처리
+    console.error('Error creating item:', error.message);
     next(error);
   }
 });
 
 
 /** 아이템 수정 API **/
-router.put('/posts/:itemid/refresh', async (req, res, next) => {
-    const { itemid } = req.params;
-    const { title, content, password } = req.body;
-  
-    const post = await prisma.posts.findUnique({
-      where: { postId: +postId },
+// patch 요청으로 아이템을 수정
+router.patch('/:code/refresh', async (req, res, next) => {
+  try {
+    // URI에서 code를 추출합니다.
+    const { code } = req.params;
+
+    // 요청 본문에서 아이템 이름과 능력치를 추출합니다.
+    const { itemname, ability } = req.body;
+
+    // code가 숫자인지 확인
+    if (!code || isNaN(parseInt(code, 10))) {
+      return res.status(400).json({ message: '유효하지 않은 아이템 코드입니다.' });
+    }
+
+    const numericCode = parseInt(code, 10);
+
+    // 필수 데이터 확인
+    if (!itemname || !ability) {
+      return res.status(400).json({
+        message: '아이템 이름(itemname)과 능력치(ability)를 입력해야 합니다.',
+      });
+    }
+
+    // ability가 JSON 객체인지 확인
+    if (typeof ability !== 'object' || Array.isArray(ability)) {
+      return res.status(400).json({ message: '아이템 능력치(ability)는 JSON 형식이어야 합니다.' });
+    }
+
+    // 데이터베이스에서 해당 아이템 코드로 아이템 검색
+    const item = await prisma.item.findUnique({
+      where: { code: numericCode },
     });
-  
-    if (!post)
+
+    // 아이템이 존재하지 않으면 404 반환
+    if (!item) {
       return res.status(404).json({ message: '아이템이 존재하지 않습니다.' });
-    else if (post.password !== password)
-      return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
-  
-    await prisma.posts.update({
+    }
+
+    // 아이템 수정
+    const updatedItem = await prisma.item.update({
+      where: { code: numericCode },
       data: {
-          title: title,
-          content: content,
-        },
-      where: {
-        postId: +postId,
-        password: password,
+        itemname, // 아이템 이름 업데이트
+        ability,  // 아이템 능력치 업데이트
       },
     });
-  
-    return res.status(200).json({ data: '아이템이 수정되었습니다.' });
-  });
+
+    // 수정된 아이템 반환
+    return res.status(200).json({
+      message: '아이템이 성공적으로 수정되었습니다.',
+      data: updatedItem,
+    });
+  } catch (error) {
+    // 에러 처리
+    console.error('아이템 수정 중 에러 발생:', error.message);
+    next(error);
+  }
+});
 
 // 아이템 목록 조회
-router.get('/posts', async (req, res, next) => {
-    const posts = await prisma.posts.findMany({
+router.get('/items', async (req, res, next) => {
+  try {
+    // 데이터베이스에서 모든 아이템을 조회
+    const items = await prisma.item.findMany({
       select: {
-        postid: true,
-        userid: true,
-        title: true,
-        createdAt: true,
-        updatedAt: true,
+        code: true,      // 아이템 코드
+        itemname: true,  // 아이템 이름
+        price: true,     // 아이템 가격
       },
       orderBy: {
-        createdAt: 'desc', // 아이템 목록을 최신순으로 정렬합니다.
+        createdAt: 'desc', // 최신순으로 정렬
       },
     });
-  
-    return res.status(200).json({ data: posts });
-  });
+
+    // 조회된 데이터 반환
+    return res.status(200).json({ data: items });
+  } catch (error) {
+    console.error('아이템 목록 조회 중 에러 발생:', error.message);
+    next(error);
+  }
+});
 
 
+/** 아이템 상세 조회 API **/
+// 특정 아이템 코드를 기반으로 아이템 상세 정보 조회
+router.get('/items/:code', async (req, res, next) => {
+  try {
+    // URI에서 아이템 코드 추출
+    const { code } = req.params;
 
-// 아이템 상세 조회
+    // 아이템 코드 유효성 확인
+    if (!code || isNaN(parseInt(code, 10))) {
+      return res.status(400).json({ message: '유효한 아이템 코드를 제공해야 합니다.' });
+    }
 
-router.get('/posts/:itemId', async (req, res, next) => {
-    const { postId } = req.params;
-    const post = await prisma.posts.findFirst({
+    // Prisma를 사용하여 데이터베이스에서 아이템 검색
+    const item = await prisma.item.findUnique({
       where: {
-        postId: +postId,
+        code: parseInt(code, 10), // 아이템 코드를 정수로 변환하여 조회
       },
       select: {
-        postid: true,
-        userid: true,
-        title: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
+        code: true,      // 아이템 코드
+        itemname: true,  // 아이템 이름
+        ability: true,   // 아이템 속성
+        price: true,     // 아이템 가격
       },
     });
-  
-    return res.status(200).json({ data: post });
-  });
 
+    // 아이템이 존재하지 않으면 404 반환
+    if (!item) {
+      return res.status(404).json({ message: '아이템이 존재하지 않습니다.' });
+    }
+
+    // 조회된 데이터를 클라이언트에 반환
+    return res.status(200).json({ data: item });
+  } catch (error) {
+    // 에러 발생 시 로그 출력 및 에러 처리 미들웨어로 전달
+    console.error('아이템 상세 조회 실패:', error.message);
+    next(error);
+  }
+});
 
 export default router;

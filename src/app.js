@@ -20,6 +20,7 @@ app.use('/api/users', UsersRouter); // Users 관련 API
 app.use('/api/cha', authMiddleware, Charouter); // Characters 관련 API (JWT 인증 필수)
 app.use('/api/items', authMiddleware, Itemrouter); // item 관련 api 
 
+
 // 서버 시작
 app.listen(PORT, () => {
   console.log(PORT, '포트로 서버가 열렸어요!');

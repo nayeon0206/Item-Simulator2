@@ -20,25 +20,23 @@ model Users {
   createdAt DateTime  @default(now()) @map("createdAt") // 생성 시간
   updatedAt DateTime  @updatedAt @map("updatedAt") // 수정 시간
 
-  // 사용자와 아이템 관계 (1:N)
-  Items      Item[]     @relation("UserToItems") // 사용자와 아이템 관계
 
   // 사용자와 캐릭터 관계 (1:N)
-  characters Character[] @relation("UserToCharacters") // 사용자와 캐릭터 관계
+  characters Character[]  // 사용자와 캐릭터 관계
 
   @@map("Users")
 }
 
 model Character {
   characterid Int      @id @default(autoincrement()) @map("characterid") // 캐릭터 ID
-  name        String   @map("charactername") // 캐릭터 이름
+  charactername  String   @map("charactername") // 캐릭터 이름
   health      Int      @default(500) @map("health") // 캐릭터 스텟: 체력
   power       Int      @default(100) @map("power") // 캐릭터 스텟: 힘
   money       Int      @default(10000) @map("money") // 기본 지급 머니
   userid      Int      @map("userid") // Users 모델의 외래 키
-
   // 사용자와의 관계
-User        Users    @relation(fields: [userid], references: [userid], name: "UserToCharacters")
+User        Users    @relation(fields: [userid], references: [userid])
+ InventoryItems Inventory[] // 1:N 관계 (캐릭터와 인벤토리 연결)
 }
 
 model Item {
@@ -51,6 +49,16 @@ model Item {
   createdAt   DateTime @default(now()) @map("createdAt") // 생성 시간
   updatedAt   DateTime @updatedAt @map("updatedAt") // 수정 시간
 
-  // 사용자와의 관계
-  User        Users    @relation(fields: [userid], references: [userid], name: "UserToItems")
+  @@map("Item")
+}
+
+model Inventory {
+  inventoryid Int      @id @default(autoincrement()) @map("inventoryid") // 인벤토리 ID
+  characterid Int      @map("characterid") // 외래 키 (Character 모델과 연결)
+  name        String   @map("name")        // 아이템 이름
+  attributes  Json     @map("attributes")  // 아이템 속성 (JSON 저장)
+  createdAt   DateTime @default(now())     @map("createdAt")
+
+  // 캐릭터와의 관계
+  Character Character @relation(fields: [characterid], references: [characterid])
 }
