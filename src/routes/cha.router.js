@@ -1,11 +1,13 @@
 import express from 'express';
 import { prisma } from '../utiles/prisma/index.js';
 import authMiddleware from '../middlewares/auth.middlewares.js';
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';// 환경 변수 관리 라이브러리 가져오기
 
-dotenv.config(); // 환경 변수 로드
-console.log('SECRET_KEY:', process.env.SECRET_KEY);
+
+// 환경 변수 파일(.env)을 로드합니다.
+dotenv.config();
+
+// Express 라우터를 초기화합니다.
 const router = express.Router();
 
 /** 캐릭터 생성 API **/

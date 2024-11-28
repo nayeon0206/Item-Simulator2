@@ -1,11 +1,15 @@
 import jwt from 'jsonwebtoken';
 import { prisma } from '../utiles/prisma/index.js';
+import dotenv from 'dotenv';
 
-const SECRET_KEY = 'your-secret-key'; // JWT 서명에 사용한 비밀 키
-;
+const SECRET_KEY = process.env.SECRET_KEY; // JWT 서명에 사용한 비밀 키
+//.env 파일에 정의된 SECRET_KEY 값을 가져옵니다.
+
+dotenv.config();
 
 const authMiddleware = async (req, res, next) => {
   try {
+        // Authorization 헤더 확인
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -17,6 +21,8 @@ const authMiddleware = async (req, res, next) => {
 
     // 토큰에서 추출한 정보를 `req.user`에 추가
     req.user = { userid: decoded.userId };
+
+    //다음 미들웨어로 이동
     next();
   } catch (error) {
     console.error('JWT 검증 실패:', error.message);

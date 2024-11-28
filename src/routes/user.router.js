@@ -2,11 +2,12 @@ import express from 'express';
 import { prisma } from '../utiles/prisma/index.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
+import dotenv from 'dotenv'; // 환경 변수 관리 라이브러리 가져오기
 
-
+// 환경 변수 파일(.env)을 로드합니다.
 dotenv.config();
 
+// Express 라우터를 초기화합니다.
 const router = express.Router();
 const SECRET_KEY = process.env.SECRET_KEY || 'custom_secret_key'; //.env에서 비밀 키 가져오기
 
