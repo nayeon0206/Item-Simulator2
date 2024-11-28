@@ -18,7 +18,7 @@ router.post('/characters', authMiddleware, async (req, res, next) => {
  const existingCharacter = await prisma.charcter.findFirst({
     where: { charctername, userid },
   });
-
+//중복된 이름이라면 이 메세지를 반환
   if (existingCharacter) {
     return res.status(409).json({ message: '이미 존재하는 캐릭터 이름입니다.' });
   }
