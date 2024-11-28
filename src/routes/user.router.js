@@ -24,6 +24,8 @@ const validateSignUpInput = (email, password) => {
   // ^와 $: 문자열의 시작과 끝을 명시.
   // [^\s@]+: 공백(\s)과 @를 제외한 하나 이상의 문자.
   // @와 \.: 이메일 형식에서 반드시 필요한 기호.
+  // username@domain.com 형식의 기본 이메일 구조를 검증.
+  //공백, @ 중복 등을 방지.
 
   // 이메일이 없거나 정규식에 맞지 않으면 에러 메시지 반환
   if (!email || !emailRegex.test(email)) {
